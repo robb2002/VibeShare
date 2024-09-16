@@ -63,6 +63,15 @@ public class User {
 	}
 	public void setBio(String bio) {
 		this.bio = bio;
+	}
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", username=" + username + ", email=" + email + ", password=" + password
+				+ ", profilePicture=" + profilePicture + ", bio=" + bio + ", active=" + active + ", isActive()="
+				+ isActive() + ", getPassword()=" + getPassword() + ", getId()=" + getId() + ", getUsername()="
+				+ getUsername() + ", getEmail()=" + getEmail() + ", getProfilePicture()=" + getProfilePicture()
+				+ ", getBio()=" + getBio() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
+				+ ", toString()=" + super.toString() + "]";
 	} 
     
 

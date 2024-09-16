@@ -24,6 +24,7 @@ public class UserController {
         if (userService.emailExists(user.getEmail())) {
             return ResponseEntity.badRequest().body("Email already in use");
         }
+        
         userService.saveUser(user);
         return ResponseEntity.ok("User registered successfully");
     }

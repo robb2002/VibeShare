@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.vibeshare.model.User;
@@ -17,10 +18,17 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     private UserRepo userRepo;
+    
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
 
     @Override
     public User saveUser(User user) {
-        return userRepo.save(user);
+    	 System.out.println("Saving user: " + user);
+    	 user.setPassword(passwordEncoder.encode(user.getPassword()));
+       
+    	    return userRepo.save(user);
     }
 
     @Override
