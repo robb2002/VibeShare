@@ -29,19 +29,7 @@
         <artifactId>spring-boot-starter-data-mongodb</artifactId>
     </dependency>
 
-    <!-- Spring Security for authentication and authorization -->
-   <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-
-    <!-- JWT for token-based authentication -->
     
-    <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt</artifactId>
-        <version>0.9.1</version>
-    </dependency>
 
     <!-- Lombok for reducing boilerplate code (optional) -->
     <dependency>
