@@ -42,4 +42,8 @@ public interface UserService {
 
     // Get users with pagination
     Page<User> getUsersWithPagination(Pageable pageable);
+
+	String registerUser(User user);
+
+	String loginUser(String usernameOrEmail, String password);
 }

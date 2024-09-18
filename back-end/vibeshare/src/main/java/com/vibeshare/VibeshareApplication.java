@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class VibeshareApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(VibeshareApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(VibeshareApplication.class, args);
+    }
 }

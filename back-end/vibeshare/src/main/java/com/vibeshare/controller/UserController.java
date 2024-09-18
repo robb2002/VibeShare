@@ -1,6 +1,7 @@
 package com.vibeshare.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +21,40 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        if (userService.emailExists(user.getEmail())) {
-            return ResponseEntity.badRequest().body("Email already in use");
+    public ResponseEntity<String> register(@RequestBody User user) {
+        String result = userService.registerUser(user);
+        if (result.equals("User registered successfully!")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
         }
-        
-        userService.saveUser(user);
-        return ResponseEntity.ok("User registered successfully");
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody Map<String, String> loginData) {
+      
+
+        String usernameOrEmail = loginData.get("username");
+        if (usernameOrEmail == null) {
+            usernameOrEmail = loginData.get("email");  // If "username" is not provided, check "email"
+        }
+     
+        String password = loginData.get("password");
+
+    
+        if (usernameOrEmail == null || password == null) {
+            return ResponseEntity.badRequest().body("Username/Email and Password must be provided.");
+        }
+
+        String result = userService.loginUser(usernameOrEmail, password);
+ 
+        if (result.equals("Login successful!")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Optional<User>> getUserById(@PathVariable String id) {

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.vibeshare.model.User;
@@ -19,13 +19,51 @@ public class UserServiceImplementation implements UserService {
     @Autowired
     private UserRepo userRepo;
     
-    
+    // Register a new user
+    public String registerUser(User user) {
+        // Check if email or username already exists
+        if (userRepo.findByEmail(user.getEmail()).isPresent()) {
+            return "Email already in use!";
+        }
 
+        if (userRepo.findByUsername(user.getUsername()).isPresent()) {
+            return "Username already taken!";
+        }
+
+        // Validate password strength (this can be customized)
+        if (user.getPassword().length() < 6) {
+            return "Password must be at least 6 characters!";
+        }
+
+        // Hash the password before saving
+        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(hashedPassword);
+
+        // Save user to the database
+        userRepo.save(user);
+        return "User registered successfully!";
+    }
+
+    public String loginUser(String usernameOrEmail, String password) {
+        User user = userRepo.findByEmailOrUsername(usernameOrEmail, usernameOrEmail)
+            .orElse(null);
+
+        if (user == null) {
+            return "User not found!";
+        }
+
+        if (!BCrypt.checkpw(password, user.getPassword())) {
+            return "Invalid username or password!";
+        }
+
+        return "Login successful!";
+    }
+
+    
     @Override
     public User saveUser(User user) {
-    	 System.out.println("Saving user: " + user);
-    	 
-    	    return userRepo.save(user);
+        System.out.println("Saving user: " + user);
+        return userRepo.save(user);
     }
 
     @Override
