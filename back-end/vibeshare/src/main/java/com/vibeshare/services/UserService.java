@@ -10,6 +10,12 @@ import java.util.Optional;
 
 public interface UserService {
 
+	// Register a new user
+    String registerUser(User user);
+
+    // Login a user
+    String loginUser(String usernameOrEmail, String password);
+
     // Save or update a user
     User saveUser(User user);
 
@@ -40,10 +46,9 @@ public interface UserService {
     // Check if email exists
     boolean emailExists(String email);
 
+    // Check if username exists
+    boolean usernameExists(String username);
+
     // Get users with pagination
     Page<User> getUsersWithPagination(Pageable pageable);
-
-	String registerUser(User user);
-
-	String loginUser(String usernameOrEmail, String password);
 }

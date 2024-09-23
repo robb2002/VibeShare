@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import com.vibeshare.model.User;
@@ -15,6 +16,7 @@ import com.vibeshare.services.UserService;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin("*")
 public class UserController {
 
     @Autowired
@@ -23,6 +25,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
         String result = userService.registerUser(user);
+        System.out.println(user);
         if (result.equals("User registered successfully!")) {
             return ResponseEntity.ok(result);
         } else {
@@ -32,22 +35,18 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody Map<String, String> loginData) {
-      
-
         String usernameOrEmail = loginData.get("username");
+        System.out.println(loginData);
         if (usernameOrEmail == null) {
             usernameOrEmail = loginData.get("email");  // If "username" is not provided, check "email"
         }
-     
         String password = loginData.get("password");
 
-    
         if (usernameOrEmail == null || password == null) {
             return ResponseEntity.badRequest().body("Username/Email and Password must be provided.");
         }
 
         String result = userService.loginUser(usernameOrEmail, password);
- 
         if (result.equals("Login successful!")) {
             return ResponseEntity.ok(result);
         } else {
