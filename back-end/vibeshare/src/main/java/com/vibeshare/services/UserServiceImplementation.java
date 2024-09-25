@@ -23,25 +23,35 @@ public class UserServiceImplementation implements UserService {
 	    @Autowired
 	    private PasswordEncoder passwordEncoder;
 
-	    @Override
+	    @Override 
+	    
 	    public String registerUser(User user) {
+	        // Check if the email already exists
 	        boolean emailExists = userRepo.existsByEmail(user.getEmail());
+
+	        // Check if the username already exists
 	        boolean usernameExists = userRepo.existsByUsername(user.getUsername());
 
+	        // Check if both email and username already exist
 	        if (emailExists && usernameExists) {
-	            return "Email and Username already in use!";
-	        } else if (emailExists) {
-	            return "Email already in use!";
-	        } else if (usernameExists) {
-	            return "Username already in use!";
+	            return "Both email and username are already in use. Please try again with different credentials.";
+	        }
+	        // Check if email exists
+	        else if (emailExists) {
+	            return "Email is already in use. Please try with a different email.";
+	        }
+	        // Check if username exists
+	        else if (usernameExists) {
+	            return "Username is already in use. Please try with a different username.";
 	        }
 
-	        // Encode the password before saving the user
+	        // If no conflicts, proceed with encoding the password and saving the user
 	        user.setPassword(passwordEncoder.encode(user.getPassword()));
 	        userRepo.save(user);
+	        
+	        // Return a success message upon successful registration
 	        return "User registered successfully!";
 	    }
-
 	    @Override
 	    public String loginUser(String usernameOrEmail, String password) {
 	        Optional<User> userOptional = userRepo.findByEmail(usernameOrEmail);

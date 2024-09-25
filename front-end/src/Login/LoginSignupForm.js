@@ -13,12 +13,12 @@ const LoginSignupForm = () => {
   });
   const [signupData, setSignupData] = useState({
     email: "",
+    username: "",
     password: "",
     confirmPassword: "",
   });
 
   const navigate = useNavigate();
-
   const loginInputRef = useRef(null);
   const signupInputRef = useRef(null);
 
@@ -30,13 +30,8 @@ const LoginSignupForm = () => {
     }
   }, [isLogin]);
 
-  const handleSignupClick = () => {
-    setIsLogin(false);
-  };
-
-  const handleLoginClick = () => {
-    setIsLogin(true);
-  };
+  const handleSignupClick = () => setIsLogin(false);
+  const handleLoginClick = () => setIsLogin(true);
 
   const handleLoginChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
@@ -48,45 +43,76 @@ const LoginSignupForm = () => {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+
+    // Ensure username or email is being sent correctly
+    const loginPayload = {
+      username: loginData.usernameOrEmail.includes("@")
+        ? null
+        : loginData.usernameOrEmail, // If not an email, treat it as username
+      email: loginData.usernameOrEmail.includes("@")
+        ? loginData.usernameOrEmail
+        : null, // If email, treat it as email
+      password: loginData.password,
+    };
+
     try {
-      const response = await axios.post(
+      // Sending login request
+      const { data, status } = await axios.post(
         "http://localhost:8080/api/users/login",
-        loginData
+        loginPayload
       );
-      toast.success("Login successful!");
-      setTimeout(() => {
-        navigate("/home");
-      }, 1000);
+
+      // Check the response from backend
+      if (status === 200 && data === "Login successful!") {
+        toast.success("Login successful!");
+        setTimeout(() => {
+          navigate("/home");
+        }, 1000);
+      } else {
+        toast.error("Login failed. Please try again.");
+      }
     } catch (error) {
-      const message =
-        (error.response && error.response.data.message) ||
-        "Login failed. Please try again.";
-      toast.error(message);
+      // Handle backend error response
+      if (error.response && error.response.data) {
+        toast.error(error.response.data); // Backend sends error message directly
+      } else {
+        toast.error(
+          "Login failed. Please check your credentials and try again."
+        );
+      }
     }
   };
-
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if passwords match
     if (signupData.password !== signupData.confirmPassword) {
       toast.error("Passwords do not match.");
       return;
     }
+
     try {
-      const response = await axios.post(
+      // Sending signup request
+      const { data, status } = await axios.post(
         "http://localhost:8080/api/users/register",
         {
           email: signupData.email,
+          username: signupData.username,
           password: signupData.password,
         }
       );
-      toast.success("Registration successful! Please login now.");
-      setTimeout(() => {
-        setIsLogin(true);
-      }, 2000);
+
+      // Successful registration
+      if (status === 200 && data === "User registered successfully!") {
+        toast.success("Registration successful! Please login.");
+        setTimeout(() => {
+          setIsLogin(true); // Switch to login form after successful registration
+        }, 2000);
+      }
     } catch (error) {
-      const errorData = error.response?.data || {};
-      if (errorData.message) {
-        toast.error(errorData.message);
+      // Handle backend error response
+      if (error.response && error.response.data) {
+        toast.error(error.response.data); // Show the backend error message (e.g., user exists)
       } else {
         toast.error("Registration failed. Please try again.");
       }
@@ -179,6 +205,16 @@ const LoginSignupForm = () => {
                 name="email"
                 placeholder="Email Address"
                 value={signupData.email}
+                onChange={handleSignupChange}
+                required
+              />
+            </div>
+            <div className="field">
+              <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={signupData.username}
                 onChange={handleSignupChange}
                 required
               />
