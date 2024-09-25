@@ -35,6 +35,7 @@ body {
 .wrapper .title-text {
   display: flex;
   justify-content: center;
+  cursor: pointer;
 }
 
 .wrapper .title {
