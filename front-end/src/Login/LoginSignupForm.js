@@ -85,6 +85,13 @@ const LoginSignupForm = () => {
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic email format validation using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(signupData.email)) {
+      toast.error("Email is invalid.");
+      return;
+    }
+
     // Check if passwords match
     if (signupData.password !== signupData.confirmPassword) {
       toast.error("Passwords do not match.");

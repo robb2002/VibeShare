@@ -3,9 +3,12 @@ package com.vibeshare.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,62 +20,26 @@ public class User {
     private String id;
 
     private String username;
-    private String email;
-    private String password;
-    private String profilePicture;
-    private String bio;
-    private boolean active;
-	public boolean isActive() {
-		return active;
-	}
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	public String getProfilePicture() {
-		return profilePicture;
-	}
-	public void setProfilePicture(String profilePicture) {
-		this.profilePicture = profilePicture;
-	}
-	public String getBio() {
-		return bio;
-	}
-	public void setBio(String bio) {
-		this.bio = bio;
-	}
-	@Override
-	public String toString() {
-		return "User [id=" + id + ", username=" + username + ", email=" + email + ", password=" + password
-				+ ", profilePicture=" + profilePicture + ", bio=" + bio + ", active=" + active + ", isActive()="
-				+ isActive() + ", getPassword()=" + getPassword() + ", getId()=" + getId() + ", getUsername()="
-				+ getUsername() + ", getEmail()=" + getEmail() + ", getProfilePicture()=" + getProfilePicture()
-				+ ", getBio()=" + getBio() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
-				+ ", toString()=" + super.toString() + "]";
-	} 
     
+    @Email(message = "Email should be valid")
+    private String email;
+    
+    private String password;
+    
+    private String profilePicture; // URL of the profile picture
+    
+    private String bio; // User bio
+    
+    private String location; // Location (optional)
+    
+    private List<String> socialLinks; // Social media or external profile links
+    
+    private boolean isActive; // Whether the account is active
+    
+    private boolean isPrivate; // Whether the account is private (visibility control)
+
+    private List<String> followers; // List of user IDs following this user
+    
+    private List<String> following; // List of user IDs this user is following
 
 }
