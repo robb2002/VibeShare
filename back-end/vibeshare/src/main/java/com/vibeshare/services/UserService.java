@@ -2,9 +2,11 @@ package com.vibeshare.services;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.vibeshare.model.User;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +34,7 @@ public interface UserService {
     void deleteUserById(String userId);
 
     // Update user password
-    boolean updateUserPassword(String userId, String newPassword);
+    String updateUserPassword(String userId, String newPassword);
 
     // Find users by partial username
     List<User> findUsersByPartialUsername(String partialUsername);
@@ -51,4 +53,10 @@ public interface UserService {
 
     // Get users with pagination
     Page<User> getUsersWithPagination(Pageable pageable);
+    
+    String updateUserProfile(String id, String username, String email, String bio, String profilePicture, String password, String location) ;
+    
+    String uploadProfilePicture(String id, MultipartFile profilePicture) throws IOException;
+    
+    String getUserIdByUsernameOrEmail(String usernameOrEmail);
 }

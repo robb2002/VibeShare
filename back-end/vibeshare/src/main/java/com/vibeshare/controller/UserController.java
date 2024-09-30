@@ -1,5 +1,6 @@
 package com.vibeshare.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.vibeshare.model.LoginResponse;
 import com.vibeshare.model.User;
 import com.vibeshare.services.UserService;
 
@@ -34,23 +37,24 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> loginData) {
+    public ResponseEntity<LoginResponse> login(@RequestBody Map<String, String> loginData) {
         String usernameOrEmail = loginData.get("username");
-        System.out.println(loginData);
+       System.out.println(loginData);
         if (usernameOrEmail == null) {
             usernameOrEmail = loginData.get("email");  // If "username" is not provided, check "email"
         }
         String password = loginData.get("password");
 
         if (usernameOrEmail == null || password == null) {
-            return ResponseEntity.badRequest().body("Username/Email and Password must be provided.");
+            return ResponseEntity.badRequest().body(new LoginResponse("Username/Email and Password must be provided.", null));
         }
 
         String result = userService.loginUser(usernameOrEmail, password);
         if (result.equals("Login successful!")) {
-            return ResponseEntity.ok(result);
+            String userId = userService.getUserIdByUsernameOrEmail(usernameOrEmail); // Assuming you have a method to get the user ID
+            return ResponseEntity.ok(new LoginResponse(result, userId));
         } else {
-            return ResponseEntity.badRequest().body(result);
+            return ResponseEntity.badRequest().body(new LoginResponse(result, null));
         }
     }
 
@@ -84,10 +88,20 @@ public class UserController {
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<Boolean> updateUserPassword(@PathVariable String id, @RequestParam String newPassword) {
-        boolean updated = userService.updateUserPassword(id, newPassword);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<String> updateUserPassword(
+        @PathVariable String id, 
+        @RequestBody Map<String, String> passwordData) {
+        
+        String newPassword = passwordData.get("newPassword");
+        String result = userService.updateUserPassword(id, newPassword);
+
+        if (result.equals("Password updated successfully!")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
     }
+
 
     @GetMapping("/search")
     public ResponseEntity<List<User>> findUsersByPartialUsername(@RequestParam String partialUsername) {
@@ -117,5 +131,47 @@ public class UserController {
     public ResponseEntity<Page<User>> getUsersWithPagination(Pageable pageable) {
         Page<User> users = userService.getUsersWithPagination(pageable);
         return ResponseEntity.ok(users);
+    }
+   
+   
+
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<String> updateUserProfile(
+            @PathVariable String id,
+            @RequestBody Map<String, String> profileData) {
+
+        String username = profileData.get("username");
+        String email = profileData.get("email");
+        String bio = profileData.get("bio");
+        String profilePicture = profileData.get("profilePicture");
+        String password = profileData.get("password");
+        String location = profileData.get("location");  // Add location field
+
+        String result = userService.updateUserProfile(id, username, email, bio, profilePicture, password, location);
+
+        return result.equals("Profile updated successfully!") 
+                ? ResponseEntity.ok(result) 
+                : ResponseEntity.badRequest().body(result);
+    }
+
+    // Endpoint to upload profile picture
+    @PostMapping("/{id}/uploadProfilePicture")
+    public ResponseEntity<String> uploadProfilePicture(
+            @PathVariable String id,
+            @RequestParam("profilePicture") MultipartFile profilePicture) {
+        try {
+            String result = userService.uploadProfilePicture(id, profilePicture);
+            return ResponseEntity.ok(result);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Error uploading profile picture: " + e.getMessage());
+        }
+    }
+
+    // Endpoint to retrieve user profile
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<?> getUserProfile(@PathVariable String id) {
+        return userService.getUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

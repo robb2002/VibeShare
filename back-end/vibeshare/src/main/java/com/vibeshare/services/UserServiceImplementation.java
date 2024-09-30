@@ -1,5 +1,6 @@
 package com.vibeshare.services;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,9 +11,16 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.vibeshare.model.User;
 import com.vibeshare.repository.UserRepo;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 @Service
 public class UserServiceImplementation implements UserService {
@@ -23,6 +31,9 @@ public class UserServiceImplementation implements UserService {
 	    @Autowired
 	    private PasswordEncoder passwordEncoder;
 
+	    private static final String PROFILE_PICTURE_DIR = "profile_pictures/";
+
+	    
 	    @Override 
 	    
 	    public String registerUser(User user) {
@@ -96,16 +107,27 @@ public class UserServiceImplementation implements UserService {
 	        userRepo.deleteById(userId);
 	    }
 
-	    @Override
-	    public boolean updateUserPassword(String userId, String newPassword) {
-	        Optional<User> userOptional = userRepo.findById(userId);
-	        if (userOptional.isPresent()) {
-	            User user = userOptional.get();
+	    public String updateUserPassword(String id, String newPassword) {
+	        Optional<User> optionalUser = userRepo.findById(id);
+
+	        if (optionalUser.isPresent()) {
+	            User user = optionalUser.get();
+
+	            // Fetch the current encrypted password
+	            String currentPassword = user.getPassword();
+
+	            // Check if the new password matches the old one
+	            if (passwordEncoder.matches(newPassword, currentPassword)) {
+	                return "New password cannot be the same as the old password!";
+	            }
+
+	            // If validation passes, encrypt and update the password
 	            user.setPassword(passwordEncoder.encode(newPassword));
 	            userRepo.save(user);
-	            return true;
+	            return "Password updated successfully!";
+	        } else {
+	            return "User not found!";
 	        }
-	        return false;
 	    }
 
 	    @Override
@@ -151,5 +173,82 @@ public class UserServiceImplementation implements UserService {
 	    public Page<User> getUsersWithPagination(Pageable pageable) {
 	        return userRepo.findAll(pageable);
 	    }
+	    
+	    @Override
+	    public String updateUserProfile(String id, String username, String email, String bio, String profilePicture, String password, String location) {
+	        Optional<User> userOptional = userRepo.findById(id);
+	        
+	        if (userOptional.isPresent()) {
+	            User user = userOptional.get();
+
+	            // Update the fields
+	            if (username != null && !username.isEmpty()) {
+	                user.setUsername(username);
+	            }
+	            if (email != null && !email.isEmpty()) {
+	                user.setEmail(email);
+	            }
+	            if (bio != null && !bio.isEmpty()) {
+	                user.setBio(bio);
+	            }
+	            if (profilePicture != null && !profilePicture.isEmpty()) {
+	                user.setProfilePicture(profilePicture);
+	            }
+	            if (password != null && !password.isEmpty()) {
+	                user.setPassword(passwordEncoder.encode(password)); // Encrypt the password
+	            }
+	            if (location != null && !location.isEmpty()) {
+	                user.setLocation(location);  // Set location
+	            }
+
+	            userRepo.save(user);
+	            return "Profile updated successfully!";
+	        } else {
+	            return "User not found.";
+	        }
+	    }
+
+	    @Override
+	    public String uploadProfilePicture(String id, MultipartFile profilePicture) throws IOException {
+	        Optional<User> userOptional = userRepo.findById(id);
+	        if (userOptional.isPresent()) {
+	            User user = userOptional.get();
+	            String fileName = id + "_" + profilePicture.getOriginalFilename();
+	            String filePath = PROFILE_PICTURE_DIR + fileName;
+	            
+	            // Save file locally
+	            File directory = new File(PROFILE_PICTURE_DIR);
+	            if (!directory.exists()) {
+	                directory.mkdirs(); // Create directory if it doesn't exist
+	            }
+	            Files.write(Paths.get(filePath), profilePicture.getBytes());
+	            
+	            // Save file path in the user profile
+	            user.setProfilePicture(filePath);
+	            userRepo.save(user);
+
+	            return "Profile picture uploaded successfully!";
+	        }
+	        return "User not found!";
+	    }
+	    
+	    private String saveProfilePicture(byte[] pictureData, String userId) {
+	        // Logic to save image (e.g., to AWS S3, or locally)
+	        // Return the URL/path to the saved image
+	        return "https://image-storage-service/" + userId + "/profile.jpg"; // Example URL
+	    }
+		
+	    
+	    public String getUserIdByUsernameOrEmail(String usernameOrEmail) {
+	    	  Optional<User> userOptional = userRepo.findByEmail(usernameOrEmail);
+	    	    
+	    	    if (!userOptional.isPresent()) {
+	    	        userOptional = userRepo.findByUsername(usernameOrEmail);
+	    	    }
+	    	    
+	    	    return userOptional.map(User::getId).orElse(null);
+	       
+	    }
+		
 	
 }

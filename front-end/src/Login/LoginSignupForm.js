@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./LoginSignupForm.css";
+import { UserContext } from "../DataManagement/UserContext";
 
 const LoginSignupForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,6 +19,7 @@ const LoginSignupForm = () => {
     confirmPassword: "",
   });
 
+  const { setUserId } = useContext(UserContext);
   const navigate = useNavigate();
   const loginInputRef = useRef(null);
   const signupInputRef = useRef(null);
@@ -44,44 +46,44 @@ const LoginSignupForm = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
-    // Ensure username or email is being sent correctly
     const loginPayload = {
       username: loginData.usernameOrEmail.includes("@")
         ? null
-        : loginData.usernameOrEmail, // If not an email, treat it as username
+        : loginData.usernameOrEmail,
       email: loginData.usernameOrEmail.includes("@")
         ? loginData.usernameOrEmail
-        : null, // If email, treat it as email
+        : null,
       password: loginData.password,
     };
 
     try {
-      // Sending login request
       const { data, status } = await axios.post(
         "http://localhost:8080/api/users/login",
         loginPayload
       );
 
-      // Check the response from backend
-      if (status === 200 && data === "Login successful!") {
+      console.log(data.message);
+      if (status === 200 && data.message === "Login successful!") {
         toast.success("Login successful!");
+
+        setUserId(data.userId);
+
+        // Navigate to the home page
         setTimeout(() => {
-          navigate("/home");
+          navigate(`/home`);
         }, 1000);
       } else {
         toast.error("Login failed. Please try again.");
       }
     } catch (error) {
-      // Handle backend error response
-      if (error.response && error.response.data) {
-        toast.error(error.response.data); // Backend sends error message directly
-      } else {
-        toast.error(
-          "Login failed. Please check your credentials and try again."
-        );
-      }
+      toast.error(
+        error.response && error.response.data
+          ? error.response.data
+          : "Login failed. Please check your credentials and try again."
+      );
     }
   };
+
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
 
