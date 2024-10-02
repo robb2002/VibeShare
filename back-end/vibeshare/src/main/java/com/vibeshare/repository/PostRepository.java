@@ -8,12 +8,6 @@ import com.vibeshare.model.Post;
 import java.util.List;
 
 @Repository
-public interface PostRepo extends MongoRepository<Post, String> {
-
-    // Find all posts by a user (using their userId)
-    List<Post> findByUserId(String userId);
-
-    // Find all posts containing a specific text or content
-    List<Post> findByContentContaining(String keyword);
+public interface PostRepository extends MongoRepository<Post, String> {
+    List<Post> findByUserId(String userId);  // Get posts by specific user
 }
-

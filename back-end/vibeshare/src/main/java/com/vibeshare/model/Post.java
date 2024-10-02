@@ -25,7 +25,7 @@ public class Post {
 	    private String content;
 	    private String imageUrl;
 	    private Date createdAt;
-	    
+	    private Date UpdatedAt;
 	    private String userId;  // The user who created the post
 	    
 	    private List<String> likes;  // List of user IDs who liked the post

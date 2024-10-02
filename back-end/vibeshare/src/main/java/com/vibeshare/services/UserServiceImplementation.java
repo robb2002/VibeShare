@@ -1,6 +1,7 @@
 package com.vibeshare.services;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vibeshare.model.Post;
 import com.vibeshare.model.User;
+import com.vibeshare.repository.PostRepository;
 import com.vibeshare.repository.UserRepo;
 
 import java.io.File;
@@ -27,6 +30,9 @@ public class UserServiceImplementation implements UserService {
 
 	 @Autowired
 	    private UserRepo userRepo;
+	 
+	  @Autowired
+	    private PostRepository postRepository;
 
 	    @Autowired
 	    private PasswordEncoder passwordEncoder;
@@ -87,6 +93,9 @@ public class UserServiceImplementation implements UserService {
 	        return userRepo.save(user);
 	    }
 
+	    public List<User> getAllUsers() {
+	        return userRepo.findAll();  // Assuming you have a UserRepository that extends JpaRepository
+	    }
 	    @Override
 	    public Optional<User> getUserByEmail(String email) {
 	        return userRepo.findByEmail(email);
@@ -250,5 +259,39 @@ public class UserServiceImplementation implements UserService {
 	       
 	    }
 		
+	    
+	    @Override
+	    public void addPostToUser(String userId, String postId) {
+	        Optional<User> optionalUser = userRepo.findById(userId);
+	        
+	        if (optionalUser.isPresent()) {
+	            User user = optionalUser.get();
+	            
+	            // Ensure the postIds list is initialized
+	            if (user.getPostIds() == null) {
+	                user.setPostIds(new ArrayList<>()); // Initialize if null
+	            }
+	            
+	            user.getPostIds().add(postId);  // Add the postId to the list
+	            userRepo.save(user);      // Save the updated user
+	        } else {
+	            throw new RuntimeException("User not found"); // Handle user not found case
+	        }
+	    }
+
+	    // New method to fetch all posts created by a specific user
+	    @Override
+	    public List<Post> getUserPosts(String userId) {
+	        Optional<User> userOptional = userRepo.findById(userId);
+	        if (userOptional.isPresent()) {
+	            User user = userOptional.get();
+	            List<String> postIds = user.getPostIds();
+	            return postRepository.findAllById(postIds);  // Fetch all posts by postIds
+	        } else {
+	            throw new RuntimeException("User not found!");
+	        }
+	    }
+	    
+	    
 	
 }

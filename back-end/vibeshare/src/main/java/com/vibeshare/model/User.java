@@ -42,4 +42,5 @@ public class User {
     
     private List<String> following; // List of user IDs this user is following
 
+    private List<String> postIds;
 }

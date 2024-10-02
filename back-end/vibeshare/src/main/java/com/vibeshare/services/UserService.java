@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vibeshare.model.Post;
 import com.vibeshare.model.User;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ public interface UserService {
     // Login a user
     String loginUser(String usernameOrEmail, String password);
 
+    List<User> getAllUsers();
     // Save or update a user
     User saveUser(User user);
 
@@ -59,4 +61,8 @@ public interface UserService {
     String uploadProfilePicture(String id, MultipartFile profilePicture) throws IOException;
     
     String getUserIdByUsernameOrEmail(String usernameOrEmail);
+
+	void addPostToUser(String userId, String postId);
+
+	List<Post> getUserPosts(String userId);
 }
