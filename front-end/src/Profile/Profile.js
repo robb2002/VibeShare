@@ -1,169 +1,124 @@
-import React, { useState, useContext, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import Dropzone from "react-dropzone";
-
+import { FiEdit3 } from "react-icons/fi";
+import { AiOutlinePlus } from "react-icons/ai";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "tailwindcss/tailwind.css"; // Ensure Tailwind is installed and configured
-import { UserContext } from "../DataManagement/UserContext";
+import "tailwindcss/tailwind.css";
 
 const Profile = () => {
-  const { userId } = useContext(UserContext); // Get userId from context after login
   const [profileData, setProfileData] = useState({
     username: "",
-    email: "",
     bio: "",
     location: "",
     profilePicture: null,
   });
-  const [isUploading, setIsUploading] = useState(false);
 
-  useEffect(() => {
-    // Fetch user data when the component mounts
-    const fetchUserProfile = async () => {
-      try {
-        const { data } = await axios.get(
-          `http://localhost:8080/api/users/${userId}/profile`
-        );
-        setProfileData((prev) => ({ ...prev, ...data }));
-      } catch (error) {
-        toast.error("Failed to load user profile.");
-      }
-    };
-
-    fetchUserProfile();
-  }, [userId]);
+  const handleDrop = (acceptedFiles) => {
+    setProfileData({ ...profileData, profilePicture: acceptedFiles[0] });
+    toast.success("Profile picture uploaded!");
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProfileData({ ...profileData, [name]: value });
   };
 
-  const handleDrop = (acceptedFiles) => {
-    setProfileData({ ...profileData, profilePicture: acceptedFiles[0] });
-  };
-
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-
-    try {
-      // Update user info
-      await axios.put(`http://localhost:8080/api/users/${userId}/profile`, {
-        username: profileData.username,
-        email: profileData.email,
-        bio: profileData.bio,
-        location: profileData.location,
-      });
-      toast.success("Profile updated successfully!");
-
-      // If profile picture is uploaded
-      if (profileData.profilePicture) {
-        const formData = new FormData();
-        formData.append("profilePicture", profileData.profilePicture);
-        setIsUploading(true);
-
-        await axios.post(
-          `http://localhost:8080/api/users/${userId}/uploadProfilePicture`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-
-        toast.success("Profile picture uploaded successfully!");
-        setIsUploading(false);
-      }
-    } catch (error) {
-      toast.error("Error updating profile.");
-      setIsUploading(false);
-    }
+  const handleProfileUpdate = () => {
+    // Handle profile update logic here
+    toast.success("Profile updated successfully!");
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-4">Manage Your Profile</h2>
-      <form onSubmit={handleProfileUpdate} className="space-y-6">
-        {/* Username */}
-        <div>
-          <label className="block text-sm font-medium">Username</label>
-          <input
-            type="text"
-            name="username"
-            value={profileData.username}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            required
-          />
-        </div>
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg space-y-6">
+        <h2 className="text-center text-2xl font-bold">Update Profile Here</h2>
 
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={profileData.email}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            required
-          />
-        </div>
-
-        {/* Bio */}
-        <div>
-          <label className="block text-sm font-medium">Bio</label>
-          <textarea
-            name="bio"
-            value={profileData.bio}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
-        </div>
-
-        {/* Location */}
-        <div>
-          <label className="block text-sm font-medium">Location</label>
-          <input
-            type="text"
-            name="location"
-            value={profileData.location}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
-        </div>
-
-        {/* Profile Picture */}
-        <div className="mt-4">
-          <label className="block text-sm font-medium">Profile Picture</label>
+        {/* Profile Picture Section */}
+        <div className="relative w-32 h-32 mx-auto">
           <Dropzone onDrop={handleDrop} multiple={false}>
             {({ getRootProps, getInputProps }) => (
               <div
                 {...getRootProps()}
-                className="border border-dashed border-gray-400 p-4 rounded-md mt-1 cursor-pointer"
+                className="w-full h-full rounded-full border-2 border-gray-300 flex items-center justify-center cursor-pointer relative"
               >
                 <input {...getInputProps()} />
                 {profileData.profilePicture ? (
-                  <p>{profileData.profilePicture.name}</p>
+                  <img
+                    src={URL.createObjectURL(profileData.profilePicture)}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 ) : (
-                  <p>Drag 'n' drop a picture here, or click to select one</p>
+                  <div className="text-gray-500 text-2xl">+</div>
                 )}
+                <div className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full">
+                  <AiOutlinePlus size={20} />
+                </div>
               </div>
             )}
           </Dropzone>
         </div>
 
+        {/* Username Section */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Username</label>
+          <div className="relative">
+            <input
+              type="text"
+              name="username"
+              value={profileData.username}
+              onChange={handleInputChange}
+              className="w-full border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 p-2 text-lg"
+              placeholder="Enter your username"
+            />
+            <FiEdit3 className="absolute right-2 top-2 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Bio Section */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Bio</label>
+          <div className="relative">
+            <input
+              type="text"
+              name="bio"
+              value={profileData.bio}
+              onChange={handleInputChange}
+              className="w-full border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 p-2 text-lg"
+              placeholder="Add your bio"
+            />
+            <FiEdit3 className="absolute right-2 top-2 text-gray-400" />
+          </div>
+        </div>
+
+        {/* Location Section */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Location</label>
+          <div className="relative">
+            <input
+              type="text"
+              name="location"
+              value={profileData.location}
+              onChange={handleInputChange}
+              className="w-full border-b-2 border-gray-300 focus:outline-none focus:border-blue-500 p-2 text-lg"
+              placeholder="Add your location"
+            />
+            <FiEdit3 className="absolute right-2 top-2 text-gray-400" />
+          </div>
+        </div>
+
         {/* Submit Button */}
         <div>
           <button
-            type="submit"
-            disabled={isUploading}
-            className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md"
+            onClick={handleProfileUpdate}
+            className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg mt-4"
           >
-            {isUploading ? "Uploading..." : "Update Profile"}
+            Update Profile
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
