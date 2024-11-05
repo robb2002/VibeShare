@@ -52,7 +52,7 @@ const HomePage = () => {
             />
           </div>
         </div>
-        <span className="font-semibold">Username</span>
+        <span className="font-semibold">{user?.username || "Loading..."}</span>
         {/* Center: Search Bar (without the icon) */}
         <div className="flex-1">
           <input

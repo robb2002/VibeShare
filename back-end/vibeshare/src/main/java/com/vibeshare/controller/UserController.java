@@ -162,7 +162,7 @@ public class UserController {
         String location = profileData.get("location");  // Added location field
 
         String result = userService.updateUserProfile(id, username, email, bio, profilePicture, password, location);
-
+System.out.println(id +","+profileData);
         return result.equals("Profile updated successfully!") 
                 ? ResponseEntity.ok(result) 
                 : ResponseEntity.badRequest().body(result);

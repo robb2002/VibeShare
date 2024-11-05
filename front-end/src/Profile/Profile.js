@@ -1,18 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Dropzone from "react-dropzone";
 import { FiEdit3 } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "tailwindcss/tailwind.css";
+import axios from "axios";
+import { UserContext } from "../DataManagement/UserContext";
 
 const Profile = () => {
+  const { userId } = useContext(UserContext); // Get userId from context
   const [profileData, setProfileData] = useState({
     username: "",
     bio: "",
     location: "",
     profilePicture: null,
   });
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data } = await axios.get(
+          `http://localhost:8080/api/users/${userId}/profile`
+        );
+        setProfileData((prev) => ({ ...prev, ...data }));
+      } catch (error) {
+        toast.error("Failed to load user profile.", { autoClose: false });
+      }
+    };
+
+    if (userId) {
+      fetchUserProfile();
+    }
+  }, [userId]);
 
   const handleDrop = (acceptedFiles) => {
     setProfileData({ ...profileData, profilePicture: acceptedFiles[0] });
@@ -24,9 +44,34 @@ const Profile = () => {
     setProfileData({ ...profileData, [name]: value });
   };
 
-  const handleProfileUpdate = () => {
-    // Handle profile update logic here
-    toast.success("Profile updated successfully!");
+  const handleProfileUpdate = async () => {
+    try {
+      // Update user info
+      await axios.put(`http://localhost:8080/api/users/${userId}/profile`, {
+        username: profileData.username,
+        bio: profileData.bio,
+        location: profileData.location,
+      });
+      toast.success("Profile updated successfully!");
+
+      // If profile picture is uploaded
+      if (profileData.profilePicture) {
+        const formData = new FormData();
+        formData.append("profilePicture", profileData.profilePicture);
+
+        await axios.post(
+          `http://localhost:8080/api/users/${userId}/uploadProfilePicture`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        toast.success("Profile picture uploaded successfully!");
+      }
+    } catch (error) {
+      toast.error("Error updating profile.");
+    }
   };
 
   return (
